@@ -13,6 +13,8 @@
 #	@options
 #	-a	Automatically stage modified and deleted files before committing.
 #	-A	Automatically stage ALL tracked/untracked files before committing.
+#	--no-branch-name Do not automatically prepend the commit message with the current branch name
+#	--branch-name Prepend the commit message with the current branch name, regardless of user overrides settings.
 #	options@
 #
 #	@notes
@@ -30,6 +32,7 @@
 #	clear-screen.sh
 #	functions/0100.bad_usage.sh
 #	functions/5000.branch_exists.sh
+#	functions/5000.is_branch_protected.sh
 #	functions/5000.parse_git_branch.sh
 #	functions/5000.parse_git_status.sh
 #	functions/5000.set_remote.sh
@@ -42,10 +45,15 @@ $loadfuncs
 
 echo ${X}
 numArgs=$#
+local_PREPEND_BRANCHNAME_TO_COMMIT_MESSAGES=$PREPEND_BRANCHNAME_TO_COMMIT_MESSAGES;
+
+
 
 # parse arguments
 if (( numArgs > 0 && numArgs < 4 )); then
 	until [ -z "$1" ]; do
+		[ "$1" == "--branch-name" ]  && local_PREPEND_BRANCHNAME_TO_COMMIT_MESSAGES=true
+		[ "$1" == "--no-branch-name" ]  && local_PREPEND_BRANCHNAME_TO_COMMIT_MESSAGES=false
 		{ [ "$1" == "-a" ] || [ "$1" == "-A" ]; } && flag=$1
 		! echo "$1" | egrep -q "^-" && msg="$1"
 		shift 1
@@ -82,6 +90,10 @@ echo ${O}${H2HL}
 echo "$ git status"
 git status
 echo ${O}${H2HL}${X}
+
+
+echo "PREPEND_BRANCHNAME_TO_COMMIT_MESSAGES: ${PREPEND_BRANCHNAME_TO_COMMIT_MESSAGES}"
+echo "local_PREPEND_BRANCHNAME_TO_COMMIT_MESSAGES: ${local_PREPEND_BRANCHNAME_TO_COMMIT_MESSAGES}"
 
 # check to see if user wants to add all modified/deleted files
 if [ $flag ]; then
@@ -149,11 +161,6 @@ if [ $flag ]; then
 fi
 
 
-echo
-echo
-echo "Committing and displaying branch changes..."
-echo ${O}${H2HL}
-
 doubleDashIndex=$(echo ${startingBranch} | sed -E -n "s/(--|__).*//p" | wc -c)
 echo "double dash index: $doubleDashIndex"
 # decrement by 1 so we don't also include the '-' in the commit message
@@ -178,8 +185,19 @@ fi
 
 ticketNumber=${startingBranch:$dashIndex:$ticketRange}
 
-echo "$ git commit -q -m \"($ticketNumber) $msg\" $flag"
-git commit -q -m "($ticketNumber) $msg" $flag
+startingBranchPrefix="(${ticketNumber}) ";
+
+
+if test $local_PREPEND_BRANCHNAME_TO_COMMIT_MESSAGES = false; then
+	startingBranchPrefix="";
+fi
+
+echo
+echo
+echo "Committing and displaying branch changes..."
+echo ${O}${H2HL}
+echo "$ git commit -q -m \"${startingBranchPrefix}$msg\" $flag"
+git commit -q -m "${startingBranchPrefix}$msg" $flag
 echo ${O}
 echo
 echo "$ git diff-tree --stat HEAD"
@@ -200,3 +218,4 @@ echo
 __clear
 
 exit
+
