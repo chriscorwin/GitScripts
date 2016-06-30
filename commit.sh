@@ -193,6 +193,8 @@ echo "ticketRange1: $ticketRange1"
 
 # find the offset between the two to get just the text between them
 ticketRange=$doubleDashIndex-$dashIndex;
+echo "ticketRange: $ticketRange"
+
 
 # make sure the range isn't huge
 if (( $ticketRange > 7 || $ticketRange < 0 )); then
