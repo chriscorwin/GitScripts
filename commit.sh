@@ -52,6 +52,7 @@ local_PREPEND_BRANCHNAME_TO_COMMIT_MESSAGES=$PREPEND_BRANCHNAME_TO_COMMIT_MESSAG
 # parse arguments
 if (( numArgs > 0 && numArgs < 4 )); then
 	until [ -z "$1" ]; do
+		[ "$1" == "--admin" ] && [ $ADMIN ] && isAdmin=true
 		[ "$1" == "--branch-name" ]  && local_PREPEND_BRANCHNAME_TO_COMMIT_MESSAGES=true
 		[ "$1" == "--no-branch-name" ]  && local_PREPEND_BRANCHNAME_TO_COMMIT_MESSAGES=false
 		{ [ "$1" == "-a" ] || [ "$1" == "-A" ]; } && flag=$1
