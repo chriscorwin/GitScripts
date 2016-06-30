@@ -163,7 +163,7 @@ fi
 
 
 tripleDashIndex=$(echo ${startingBranch} | sed -E -n "s/(---|___).*//p" | wc -c)
-echo "double dash index: $tripleDashIndex"
+echo "triple dash index: $tripleDashIndex"
 # decrement by 2 so we don't also include the '-' in the commit message
 ((tripleDashIndex--))
 ((tripleDashIndex--))
