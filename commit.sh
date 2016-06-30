@@ -162,6 +162,16 @@ if [ $flag ]; then
 fi
 
 
+tripleDashIndex=$(echo ${startingBranch} | sed -E -n "s/(---|___).*//p" | wc -c)
+echo "double dash index: $tripleDashIndex"
+# decrement by 2 so we don't also include the '-' in the commit message
+((tripleDashIndex--))
+((tripleDashIndex--))
+if (($tripleDashIndex < 0)); then
+	tripleDashIndex=0
+fi
+
+
 doubleDashIndex=$(echo ${startingBranch} | sed -E -n "s/(--|__).*//p" | wc -c)
 echo "double dash index: $doubleDashIndex"
 # decrement by 1 so we don't also include the '-' in the commit message
@@ -175,6 +185,11 @@ echo "dash index: $dashIndex"
 if (( $dashIndex > $doubleDashIndex || $dashIndex < 0)); then
 	dashIndex=0
 fi
+
+# find the offset between the two to get just the text between them
+ticketRange1=$tripleDashIndex-$dashIndex;
+echo "ticketRange1: $ticketRange1"
+
 
 # find the offset between the two to get just the text between them
 ticketRange=$doubleDashIndex-$dashIndex;
