@@ -52,12 +52,11 @@ local_PREPEND_BRANCHNAME_TO_COMMIT_MESSAGES=$PREPEND_BRANCHNAME_TO_COMMIT_MESSAG
 # parse arguments
 if (( numArgs > 0 && numArgs < 4 )); then
 	until [ -z "$1" ]; do
-		[ "$1" == "--admin" ] && [ $ADMIN ] && isAdmin=true
 		[ "$1" == "--branch-name" ]  && local_PREPEND_BRANCHNAME_TO_COMMIT_MESSAGES=true
 		[ "$1" == "--no-branch-name" ]  && local_PREPEND_BRANCHNAME_TO_COMMIT_MESSAGES=false
 		{ [ "$1" == "-a" ] || [ "$1" == "-A" ]; } && flag=$1
 		! echo "$1" | egrep -q "^-" && msg="$1"
-		shift
+		shift 1
 	done
 else
 	__bad_usage commit "Invalid number of parameters."
@@ -161,8 +160,32 @@ if [ $flag ]; then
 	esac
 fi
 
-startingBranchPrefix="(${startingBranch}) ";
 
+doubleDashIndex=$(echo ${startingBranch} | sed -E -n "s/(--|__).*//p" | wc -c)
+echo "double dash index: $doubleDashIndex"
+# decrement by 1 so we don't also include the '-' in the commit message
+((doubleDashIndex--))
+if (($doubleDashIndex < 0)); then
+	doubleDashIndex=0
+fi
+
+dashIndex=$(echo ${startingBranch} | sed -n "s/-.*//p" | wc -c)
+echo "dash index: $dashIndex"
+if (( $dashIndex > $doubleDashIndex || $dashIndex < 0)); then
+	dashIndex=0
+fi
+
+# find the offset between the two to get just the text between them
+ticketRange=$doubleDashIndex-$dashIndex;
+
+# make sure the range isn't huge
+if (( $ticketRange > 7 || $ticketRange < 0 )); then
+	ticketRange=7
+fi
+
+ticketNumber=${startingBranch:$dashIndex:$ticketRange}
+
+startingBranchPrefix="(${ticketNumber}) ";
 
 
 if test $local_PREPEND_BRANCHNAME_TO_COMMIT_MESSAGES = false; then
@@ -190,11 +213,7 @@ echo ${O}${H2HL}${X}
 echo
 
 # wrap up...
-if [ $isAdmin ]; then
-	"${gitscripts_path}"push.sh --admin "$startingBranch"
-else
-	"${gitscripts_path}"push.sh "$startingBranch"
-fi
+"${gitscripts_path}"push.sh "$startingBranch"
 
 __clear
 
