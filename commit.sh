@@ -201,8 +201,13 @@ if (( $ticketRange > 7 || $ticketRange < 0 )); then
 	ticketRange=7
 fi
 
+ticketNumber1=${startingBranch:$dashIndex:$ticketRange1}
 ticketNumber=${startingBranch:$dashIndex:$ticketRange}
 
+echo "ticketNumber1: $ticketNumber1"
+echo "ticketNumber: $ticketNumber"
+
+startingBranchPrefix1="(${ticketNumber1}) ";
 startingBranchPrefix="(${ticketNumber}) ";
 
 
