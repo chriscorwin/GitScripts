@@ -162,6 +162,7 @@ if [ $flag ]; then
 fi
 
 
+
 tripleDashIndex=$(echo ${startingBranch} | sed -E -n "s/(GH[0-9]+---|___).*//p" | wc -c)
 echo "triple dash index: $tripleDashIndex"
 # decrement by 2 so we don't also include the '-' in the commit message
